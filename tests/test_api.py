@@ -34,5 +34,11 @@ def test_vacancies():
     sj = SuperJobAPI()
     hh = HeadHunterAPI()
     req_parm = RequestParameter(search=['python', 'django'])
-    sj.get_vacancies(request_params=req_parm)
-    hh.get_vacancies(request_params=req_parm)
+    sj_vacancies = sj.get_vacancies(request_params=req_parm)
+    hh_vacancies = hh.get_vacancies(request_params=req_parm)
+    all_vacancies = len(sj_vacancies) + len(hh_vacancies)
+    count_vacancies = len(sj_vacancies[0].vacancies)
+    assert sj_vacancies is not None
+    assert hh_vacancies is not None
+    assert all == count_vacancies
+

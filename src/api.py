@@ -2,6 +2,7 @@ import abc
 from abc import ABC, abstractmethod
 from src.env import EnvParameter
 from src.req_params import RequestParameter
+from src.vacancy import Vacancy
 import requests
 import json
 
@@ -78,9 +79,12 @@ class SuperJobAPI(API):
     def get_vacancies(self, request_params: RequestParameter):
         vacancies = self._get_response_json(url=self.__url, headers=self.__headers,
                                             params=self._create_params(request_params=request_params))
-        print(f'\n----- SuperJob-----')
+        # print(f'\n----- SuperJob-----')
+        sj_vacancies = []
         for vacancy in vacancies['objects']:
-            print(vacancy['profession'])
+            vc = Vacancy(title=vacancy.get('profession'))
+            sj_vacancies.append(vc)
+        return sj_vacancies
 
 
 class HeadHunterAPI(API):
@@ -115,6 +119,9 @@ class HeadHunterAPI(API):
     def get_vacancies(self, request_params: RequestParameter):
         vacancies = self._get_response_json(url=self.__url, headers=self.__headers,
                                             params=self._create_params(request_params=request_params))
-        print(f'\n-----HeadHunter-----')
+        # print(f'\n-----HeadHunter-----')
+        hh_vacancies = []
         for vacancy in vacancies['items']:
-            print(vacancy['name'])
+            vc = Vacancy(title=vacancy.get('name'))
+            hh_vacancies.append(vc)
+        return hh_vacancies

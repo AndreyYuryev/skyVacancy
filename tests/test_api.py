@@ -40,5 +40,5 @@ def test_vacancies():
     count_vacancies = len(sj_vacancies[0].vacancies)
     assert sj_vacancies is not None
     assert hh_vacancies is not None
-    assert all == count_vacancies
+    assert all_vacancies == count_vacancies
 

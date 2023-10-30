@@ -1,10 +1,8 @@
-import abc
 from abc import ABC, abstractmethod
 from src.env import EnvParameter
 from src.req_params import RequestParameter
 from src.vacancy import Vacancy
 import requests
-import json
 
 
 class API(ABC):
@@ -82,7 +80,20 @@ class SuperJobAPI(API):
         # print(f'\n----- SuperJob-----')
         sj_vacancies = []
         for vacancy in vacancies['objects']:
-            vc = Vacancy(title=vacancy.get('profession'))
+            # название вакансии
+            title = vacancy.get('profession', 'Не указано')
+            # ссылка на вакансию
+            link = vacancy.get('link', 'Не указано')
+            # город
+            try:
+                city = vacancy['town']['title']
+            except KeyError:
+                city = 'Не указано'
+
+            # зарплата
+            salary = {'from': vacancy.get('payment_from', 0), 'to': vacancy.get('payment_to', 0)}
+
+            vc = Vacancy(title=title, salary=salary, city=city, link=link)
             sj_vacancies.append(vc)
         return sj_vacancies
 
@@ -122,6 +133,30 @@ class HeadHunterAPI(API):
         # print(f'\n-----HeadHunter-----')
         hh_vacancies = []
         for vacancy in vacancies['items']:
-            vc = Vacancy(title=vacancy.get('name'))
+            # название вакансии
+            title = vacancy.get('name', 'Не указано')
+            # ссылка на вакансию
+            link = vacancy.get('alternate_url', 'Не указано')
+            # город
+            try:
+                city = vacancy['area']['name']
+            except KeyError:
+                city = 'Не указано'
+
+            # зарплата
+            salary = {'from': 0, 'to': 0}
+            try:
+                salary_d = vacancy['salary']
+                if salary_d is not None:
+                    salary['from'] = salary_d.get('from', 0)
+                    if salary['from'] is None:
+                        salary['from'] = 0
+                    salary['to'] = salary_d.get('to', 0)
+                    if salary['to'] is None:
+                        salary['to'] = 0
+            except KeyError:
+                pass
+
+            vc = Vacancy(title=title, salary=salary, city=city, link=link)
             hh_vacancies.append(vc)
         return hh_vacancies

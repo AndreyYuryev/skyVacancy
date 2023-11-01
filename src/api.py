@@ -1,7 +1,7 @@
 from abc import ABC, abstractmethod
 from src.env import EnvParameter
-from src.req_params import RequestParameter
-from src.vacancy import Vacancy
+from src.req_params import RequestParameter, SearchParameter
+from src.vacancy import Vacancy, Salary
 import requests
 
 
@@ -64,14 +64,7 @@ class SuperJobAPI(API):
         return {"X-Api-App-Id": self._get_api_key()}
 
     def _create_params(self, request_params: RequestParameter):
-        params = dict()
-        params['count'] = request_params.count
-        params['page'] = request_params.page
-        params['archive'] = request_params.archive
-        # формирование запроса
-        # поиск везде по ключевым словам
-        params['keyword'] = ' '.join(request_params.search)
-
+        params = request_params.params(api_sj=True)
         return params
 
     def get_vacancies(self, request_params: RequestParameter):
@@ -89,11 +82,19 @@ class SuperJobAPI(API):
                 city = vacancy['town']['title']
             except KeyError:
                 city = 'Не указано'
-
             # зарплата
-            salary = {'from': vacancy.get('payment_from', 0), 'to': vacancy.get('payment_to', 0)}
-
-            vc = Vacancy(title=title, salary=salary, city=city, link=link)
+            salary = Salary(salary_from=vacancy.get('payment_from', 0), salary_to=vacancy.get('payment_to', 0),
+                            agreement=vacancy.get('agreement', False))
+            # наименование компании работодателя
+            company = vacancy.get('firm_name', 'Не указано')
+            # описание вакансии
+            description = 'Не указано'
+            try:
+                # description = vacancy['work']
+                description = vacancy['vacancyRichText']
+            except KeyError:
+                pass
+            vc = Vacancy(title=title, salary=salary, city=city, link=link, company=company, description=description)
             sj_vacancies.append(vc)
         return sj_vacancies
 
@@ -118,13 +119,7 @@ class HeadHunterAPI(API):
         return {}
 
     def _create_params(self, request_params: RequestParameter):
-        params = dict()
-        params['count'] = request_params.count
-        params['page'] = request_params.page
-        params['archive'] = request_params.archive
-        # формирование запроса
-        # поиск везде по ключевым словам
-        params['text'] = ' '.join(request_params.search)
+        params = request_params.params(api_hh=True)
         return params
 
     def get_vacancies(self, request_params: RequestParameter):
@@ -144,19 +139,32 @@ class HeadHunterAPI(API):
                 city = 'Не указано'
 
             # зарплата
-            salary = {'from': 0, 'to': 0}
+            salary_object = vacancy.get('salary', None)
+            if salary_object is None:
+                salary = Salary(agreement=True)
+            else:
+                salary_from = salary_object.get('from', 0)
+                salary_to = salary_object.get('to', 0)
+                if salary_from == salary_to and salary_from == 0:
+                    salary = Salary(agreement=True)
+                else:
+                    salary = Salary(salary_from=salary_from, salary_to=salary_to)
+            # наименование компании работодателя
+            company = 'Не указано'
             try:
-                salary_d = vacancy['salary']
-                if salary_d is not None:
-                    salary['from'] = salary_d.get('from', 0)
-                    if salary['from'] is None:
-                        salary['from'] = 0
-                    salary['to'] = salary_d.get('to', 0)
-                    if salary['to'] is None:
-                        salary['to'] = 0
+                company_d = vacancy['employer']
+                if company_d is not None:
+                    company = company_d.get('name', 'Не указано')
+            except KeyError:
+                pass
+            # описание вакансии
+            description = 'Не указано'
+            try:
+                snippet = vacancy['snippet']
+                description = snippet['requirement']
             except KeyError:
                 pass
 
-            vc = Vacancy(title=title, salary=salary, city=city, link=link)
+            vc = Vacancy(title=title, salary=salary, city=city, link=link, company=company, description=description)
             hh_vacancies.append(vc)
         return hh_vacancies

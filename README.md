@@ -15,3 +15,13 @@
 
 В любой момент при вводе exit - программа завершает работу.
 
+В корне проекта необходимо создать .env файл с ключами - для superjob нужен ключ, остальные необязательны.
+
+TEST_SUPERJOB_API_KEY=TEST111
+
+TEST_HEADHUNTER_API_KEY=TEST222
+
+SUPERJOB_API_KEY=secret_api_key
+
+HEADHUNTER_API_KEY=
+

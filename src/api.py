@@ -144,7 +144,11 @@ class HeadHunterAPI(API):
                 salary = Salary(agreement=True)
             else:
                 salary_from = salary_object.get('from', 0)
+                if salary_from is None:
+                    salary_from = 0
                 salary_to = salary_object.get('to', 0)
+                if salary_to is None:
+                    salary_to = 0
                 if salary_from == salary_to and salary_from == 0:
                     salary = Salary(agreement=True)
                 else:

@@ -34,7 +34,7 @@ def test_params():
 def test_vacancies():
     sj = SuperJobAPI()
     hh = HeadHunterAPI()
-    search_prm = SearchParameter(keywords=['python'])
+    search_prm = SearchParameter(keywords=['100000'])
     req_prm = RequestParameter(count=100, page=0, archive=False, search=search_prm)
     sj_vacancies = sj.get_vacancies(request_params=req_prm)
     hh_vacancies = hh.get_vacancies(request_params=req_prm)

@@ -121,9 +121,9 @@ class Vacancy:
 
     def __str__(self):
         agreement = 'По договоренности'
-        return (f'{self.city} {self.company} {self.title} '
-                f'{agreement if self.salary.max_salary == 0 else self.salary.max_salary} '
-                f'{self.link}')
+        return (f'Город:{self.city} Фирма:{self.company} Вакансия:{self.title} '
+                f'Оплата:{agreement if self.salary.max_salary == 0 else self.salary.max_salary} '
+                f'Ссылка:{self.link}')
 
     def get_json_data(self):
         """ Создать словарь из вакансии """

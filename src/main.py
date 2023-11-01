@@ -17,7 +17,6 @@ def main():
                 Выбрать параметры выбора вакансий
             3. Вывод на экран
                 Указать количество строк для вывода
-        
     '''
     interface = UserInterface()
     while True:
@@ -25,7 +24,7 @@ def main():
             interface.execute()
         except ExitException:
             break
-
+    print('Работа программы завершена.')
 
 if __name__ == '__main__':
     main()

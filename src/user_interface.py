@@ -1,6 +1,7 @@
 from req_params import SearchParameter, RequestParameter
 from api import SuperJobAPI, HeadHunterAPI
-from uploader import JSONUploader
+from downloader import JSONDownloader, JSONUploader
+from vacancy import Vacancy, Salary
 
 
 class ExitException(Exception):
@@ -14,7 +15,7 @@ class UserInterface:
         self.__platform = []
         self.__vacancies = []
         self.__proceed_vacancies = []
-        self.__state = 0
+        self.__state = 9  # загрузка файла или выбор платформы
         print(f'Для завершения программы при любом вводе данных введите: exit')
 
     def execute(self):
@@ -38,8 +39,13 @@ class UserInterface:
             case 5:
                 # решение о дальнейшей обработке
                 self.__decision()
+            case 6:
+                # загрузить данные из файла
+                self.__platform = self.__set_all_platform()
+                self.__vacancies = self.__load_vacancies()
             case 9:
-                raise ExitException
+                # загрузить из файла или искать вакансии
+                self.__first_decision()
 
     def __ask_user(self, input_string):
         """ Проверка ввода пользователя на завершение программы """
@@ -47,6 +53,12 @@ class UserInterface:
         if answer == 'exit':
             raise ExitException
         return answer
+
+    def __set_all_platform(self):
+        platforms = list()
+        platforms.append('SJ')
+        platforms.append('HH')
+        return platforms
 
     def __search_platform(self):
         """ Выбрать платформу """
@@ -84,7 +96,7 @@ class UserInterface:
                 vacancies.extend(sj_vacancies)
 
         print(f'Найдено вакансий: {len(vacancies)}')
-        answer = self.__ask_user(f'Дальше\n'
+        answer = self.__ask_user(f'Дальше \n'
                                  f'1-сортировка вакансий\n'
                                  f'2-вывод на экран\n'
                                  f'3-сохранение в файл: ')
@@ -117,11 +129,13 @@ class UserInterface:
                 proceed_vacancies = sorted(self.__vacancies, key=lambda x: x.company)
             case '4':
                 proceed_vacancies = sorted(self.__vacancies, key=lambda x: x.salary.max_salary, reverse=True)
-        answer = self.__ask_user(
-            f'Сколько ТОП записей? ')
-        top = int(answer)
         self.__state = 3
-        return proceed_vacancies[:top]
+        answer = self.__ask_user(f'Выберите сколько топ вакансий будет отобрано(пусто-все): ')
+        if answer != '':
+            top = int(answer)
+            return proceed_vacancies[:top]
+        else:
+            return proceed_vacancies
 
     def __list_vacancies(self):
         """ Вывести список вкансий """
@@ -129,10 +143,12 @@ class UserInterface:
         proceed_counter = len(vacancies)
 
         answer = self.__ask_user(
-            f'Выберите количество вакансий для вывода, доступно {proceed_counter}: ')
-        counter = int(answer)
-
-        if counter > proceed_counter:
+            f'Выберите количество вакансий для вывода, доступно {proceed_counter} (пусто-все): ')
+        if answer != '':
+            counter = int(answer)
+            if counter > proceed_counter:
+                counter = proceed_counter
+        else:
             counter = proceed_counter
         for index in range(counter):
             print(vacancies[index])
@@ -143,9 +159,21 @@ class UserInterface:
         answer = self.__ask_user(f'Введите имя файла:')
 
         # сохранение в файл
-        saver = JSONUploader(data=self.__create_json(self.__proceed_vacancies))
+        saver = JSONDownloader(data=self.__create_json(self.__proceed_vacancies))
         saver.save_file(answer)
         self.__state = 5
+
+    def __first_decision(self):
+        """ Дальнейшая обработка """
+        answer = self.__ask_user(
+            f'1-загрузить данные из файла\n'
+            f'2-поиск вакансий на платформах: ')
+        if answer == '1':
+            self.__state = 6
+        elif answer == '2':
+            self.__state = 0
+        else:
+            self.__state = 0
 
     def __decision(self):
         """ Дальнейшая обработка """
@@ -155,7 +183,8 @@ class UserInterface:
             f'2-выполнить поиск по другим критериям\n'
             f'3-выполнить сортировку по другим ключам\n'
             f'4-сохранить в файл\n'
-            f'5-вывести на экран: ')
+            f'5-вывести на экран\n'
+            f'6-загрузить данные из файла: ')
         if answer == '1':
             self.__state = 0
         elif answer == '2':
@@ -166,6 +195,8 @@ class UserInterface:
             self.__state = 4
         elif answer == '5':
             self.__state = 3
+        elif answer == '6':
+            self.__state
         else:
             self.__state = 2
 
@@ -183,3 +214,19 @@ class UserInterface:
             index += 1
             json_data[index] = vacancy.get_json_data()
         return json_data
+
+    def __load_vacancies(self):
+        """ Создать вакансии из сохраненного файла """
+        answer = self.__ask_user(f'Введите имя файла:')
+        # сохранение в файл
+        reader = JSONUploader()
+        data = reader.open_file(answer)
+        self.__state = 3
+        vacancies = list()
+
+        for item in data.values():
+            salary = Salary(salary_to=item['salary'], agreement=item.get('salary_agreement', False))
+            vacancy = Vacancy(title=item['title'], company=item['company'], link=item['link'], city=item['city'],
+                              description=item['description'], salary=salary)
+            vacancies.append(vacancy)
+        return vacancies

@@ -21,6 +21,7 @@ def test_salary():
 
 
 def test_vacancy():
+    Vacancy.vacancies.clear()
     salary = Salary(agreement=True)
     vacancy1 = Vacancy(title='vacancy 1', link='https:/testvacancy1.ru', salary=salary)
     vacancy2 = Vacancy(title='vacancy 2', city='Moscow', salary=salary)

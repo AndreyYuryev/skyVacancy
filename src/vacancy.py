@@ -124,3 +124,16 @@ class Vacancy:
         return (f'{self.city} {self.company} {self.title} '
                 f'{agreement if self.salary.max_salary == 0 else self.salary.max_salary} '
                 f'{self.link}')
+
+    def get_json_data(self):
+        """ Создать словарь из вакансии """
+        vacancy_dict = dict()
+        vacancy_dict['title'] = self.title
+        vacancy_dict['link'] = self.link
+        vacancy_dict['city'] = self.city
+        vacancy_dict['company'] = self.company
+        vacancy_dict['description'] = self.description
+        if self.salary.is_agreement():
+            vacancy_dict['salary_agreement'] = True
+        vacancy_dict['salary'] = self.salary.max_salary
+        return vacancy_dict

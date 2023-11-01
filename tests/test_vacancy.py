@@ -51,3 +51,14 @@ def test_vacancy_salary():
     assert vacancy1 < vacancy2
     assert vacancy2 > vacancy3
     assert vacancy4 == vacancy5
+
+
+def test_vacancy_json():
+    salary1 = Salary(salary_from=15000, salary_to=25000)
+    salary2 = Salary(agreement=True)
+    vacancy1 = Vacancy(title='vacancy 1', company='company1', salary=salary1)
+    vacancy2 = Vacancy(title='vacancy 2', link='test2.ru', salary=salary2)
+    assert vacancy1.get_json_data() == {'city': '', 'company': 'company1', 'description': '', 'link': '',
+                                        'salary': 25000, 'title': 'vacancy 1'}
+    assert vacancy2.get_json_data() == {'city': '', 'company': '', 'description': '', 'link': 'test2.ru', 'salary': 0,
+                                        'salary_agreement': True, 'title': 'vacancy 2'}

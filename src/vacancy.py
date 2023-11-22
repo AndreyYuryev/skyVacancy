@@ -56,13 +56,14 @@ class Vacancy:
 
     __Vacancies = []
 
-    def __init__(self, title='', salary=Salary(agreement=True), link='', city='', company='', description=''):
+    def __init__(self, title='', salary=Salary(agreement=True), link='', city='', company='', description='', platform=''):
         self.__title = title
         self.__salary = salary
         self.__link = link
         self.__city = city
         self.__company = company
         self.__description = description
+        self.__platform = platform
         Vacancy.__Vacancies.append(self)
 
     def __eq__(self, other):
@@ -133,6 +134,7 @@ class Vacancy:
         vacancy_dict['city'] = self.city
         vacancy_dict['company'] = self.company
         vacancy_dict['description'] = self.description
+        vacancy_dict['platform'] = self.__platform
         if self.salary.is_agreement():
             vacancy_dict['salary_agreement'] = True
         vacancy_dict['salary'] = self.salary.max_salary

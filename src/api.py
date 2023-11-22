@@ -94,7 +94,8 @@ class SuperJobAPI(API):
                 description = vacancy['vacancyRichText']
             except KeyError:
                 pass
-            vc = Vacancy(title=title, salary=salary, city=city, link=link, company=company, description=description)
+            vc = Vacancy(title=title, salary=salary, city=city, link=link, company=company, description=description,
+                         platform='SJ')
             sj_vacancies.append(vc)
         return sj_vacancies
 
@@ -169,6 +170,7 @@ class HeadHunterAPI(API):
             except KeyError:
                 pass
 
-            vc = Vacancy(title=title, salary=salary, city=city, link=link, company=company, description=description)
+            vc = Vacancy(title=title, salary=salary, city=city, link=link, company=company, description=description,
+                         platform='HH')
             hh_vacancies.append(vc)
         return hh_vacancies

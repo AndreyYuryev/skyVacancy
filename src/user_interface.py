@@ -1,7 +1,8 @@
-from req_params import SearchParameter, RequestParameter
-from api import SuperJobAPI, HeadHunterAPI
-from downloader import JSONDownloader, JSONUploader
-from vacancy import Vacancy, Salary
+from src.req_params import SearchParameter, RequestParameter
+from src.api import SuperJobAPI, HeadHunterAPI
+from src.downloader import JSONDownloader
+from src.uploader import JSONUploader
+from src.vacancy import Vacancy, Salary
 
 
 class ExitException(Exception):
@@ -65,12 +66,12 @@ class UserInterface:
         platforms = list()
         answer = self.__ask_user(f'Выберите платформу 1-SuperJob 2-HeadHunter 3-обе платформы: ')
         if answer == '1':
-            platforms.append('SJ')
+            platforms.append(SuperJobAPI())
         elif answer == '2':
-            platforms.append('HH')
+            platforms.append(HeadHunterAPI())
         else:
-            platforms.append('SJ')
-            platforms.append('HH')
+            platforms.append(SuperJobAPI())
+            platforms.append(HeadHunterAPI())
         self.__state = 1
         return platforms
 
@@ -83,17 +84,8 @@ class UserInterface:
         req_prm = RequestParameter(count=100, page=0, archive=False, search=search_prm)
 
         for item in self.__platform:
-            if item == 'HH':
-                # искать вакансии на HH
-                hh = HeadHunterAPI()
-                hh_vacancies = hh.get_vacancies(request_params=req_prm)
-                vacancies.extend(hh_vacancies)
-
-            if item == 'SJ':
-                # искать вакансии на SJ
-                sj = SuperJobAPI()
-                sj_vacancies = sj.get_vacancies(request_params=req_prm)
-                vacancies.extend(sj_vacancies)
+            new_vacancies = item.get_vacancies(request_params=req_prm)
+            vacancies.extend(new_vacancies)
 
         print(f'Найдено вакансий: {len(vacancies)}')
         answer = self.__ask_user(f'Дальше \n'
@@ -227,6 +219,6 @@ class UserInterface:
         for item in data.values():
             salary = Salary(salary_to=item['salary'], agreement=item.get('salary_agreement', False))
             vacancy = Vacancy(title=item['title'], company=item['company'], link=item['link'], city=item['city'],
-                              description=item['description'], salary=salary)
+                              description=item['description'], salary=salary, platform=item['platform'])
             vacancies.append(vacancy)
         return vacancies

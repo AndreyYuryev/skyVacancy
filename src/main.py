@@ -1,4 +1,4 @@
-from user_interface import UserInterface, ExitException
+from src.user_interface import UserInterface, ExitException
 
 
 def main():
@@ -25,6 +25,7 @@ def main():
         except ExitException:
             break
     print('Работа программы завершена.')
+
 
 if __name__ == '__main__':
     main()
